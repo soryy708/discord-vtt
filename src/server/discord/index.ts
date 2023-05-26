@@ -9,12 +9,13 @@ export async function bootstrapDiscord(): Promise<void> {
     await restApi.put(
         Routes.applicationCommands(getConfig('DISCORD_CLIENT_ID')),
         {
-            body: commands.map((command) => {
-                return {
+            body: await Promise.all(
+                commands.map(async (command) => ({
                     name: command.name,
                     description: command.description,
-                };
-            }),
+                    options: await command.getOptions(),
+                })),
+            ),
         },
     );
 

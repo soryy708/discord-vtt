@@ -1,3 +1,3 @@
-import { PingCommand } from './ping';
+import { DrawCommand } from './draw';
 
-export default [new PingCommand()];
+export default [new DrawCommand()];
