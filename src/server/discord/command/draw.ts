@@ -4,7 +4,6 @@ import {
     ApplicationCommandOptionType,
     AttachmentBuilder,
     ChatInputCommandInteraction,
-    EmbedBuilder,
 } from 'discord.js';
 import { DiscordCommand, DiscordCommandOption } from './interface';
 
