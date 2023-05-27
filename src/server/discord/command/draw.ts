@@ -7,6 +7,7 @@ import {
 } from 'discord.js';
 import { DiscordCommand, DiscordCommandOption } from './interface';
 import { randomInRange } from '../../entropy';
+import { getFilesInDirectory, getSubdirectories } from '../../file';
 
 export class DrawCommand implements DiscordCommand {
     public name = 'draw';
@@ -22,12 +23,8 @@ export class DrawCommand implements DiscordCommand {
                     cardsPath,
             );
         }
-        const cardsDirectoryContents = await fs.promises.readdir(
+        const games = await getSubdirectories(
             path.join(process.cwd(), 'cards'),
-            { withFileTypes: true },
-        );
-        const games = cardsDirectoryContents.filter((dirent) =>
-            dirent.isDirectory(),
         );
         const options = [
             {
@@ -36,11 +33,11 @@ export class DrawCommand implements DiscordCommand {
                 description: 'What game are we drawing from?',
                 options: await Promise.all(
                     games.map(async (game) => {
-                        const cards = await this.getCardsOfGame(game.name);
+                        const cards = await this.getCardsOfGame(game);
                         return {
                             type: ApplicationCommandOptionType.Subcommand,
-                            name: this.directoryToCommand(game.name),
-                            description: game.name,
+                            name: this.directoryToCommand(game),
+                            description: game,
                             options: cards.map((card) => ({
                                 type: ApplicationCommandOptionType.Number,
                                 name: this.directoryToCommand(card),
@@ -66,15 +63,8 @@ export class DrawCommand implements DiscordCommand {
         }
     }
 
-    private async getCardsOfGame(game: string): Promise<string[]> {
-        const subdirectoryContents = await fs.promises.readdir(
-            path.join(process.cwd(), 'cards', game),
-            { withFileTypes: true },
-        );
-        const cardTypes = subdirectoryContents.filter((dirent) =>
-            dirent.isDirectory(),
-        );
-        return cardTypes.map((cardType) => cardType.name);
+    private getCardsOfGame(game: string): Promise<string[]> {
+        return getSubdirectories(path.join(process.cwd(), 'cards', game));
     }
 
     private directoryToCommand(directory: string): string {
@@ -108,19 +98,15 @@ export class DrawCommand implements DiscordCommand {
 
     private async getCard(game: string, type: string): Promise<string> {
         const cardsDirectory = path.join(process.cwd(), 'cards', game, type);
-        const cardsDirectoryContents = await fs.promises.readdir(
-            cardsDirectory,
-            { withFileTypes: true },
-        );
-        const images = cardsDirectoryContents.filter(
-            (dirent) =>
-                dirent.isFile() && this.fileExtensionIsImage(dirent.name),
+        const cardFiles = await getFilesInDirectory(cardsDirectory);
+        const images = cardFiles.filter((file) =>
+            this.fileExtensionIsImage(file),
         );
         if (images.length === 0) {
             return null;
         }
         const index = randomInRange(0, images.length);
-        const imageName = images[index].name;
+        const imageName = images[index];
         return path.join(cardsDirectory, imageName);
     }
 
