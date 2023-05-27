@@ -91,6 +91,10 @@ export class DrawCommand implements DiscordCommand {
                 ).filter((c) => c !== null);
                 await interaction.reply({
                     files: cards.map((c) => new AttachmentBuilder(c)),
+                    content:
+                        cards.length > 0
+                            ? `${count} ${game} ${card} cards`
+                            : `I don't have any ${game} ${card} cards 😟`,
                 });
             }),
         );
