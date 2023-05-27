@@ -6,6 +6,7 @@ import {
     ChatInputCommandInteraction,
 } from 'discord.js';
 import { DiscordCommand, DiscordCommandOption } from './interface';
+import { randomInRange } from '../../entropy';
 
 export class DrawCommand implements DiscordCommand {
     public name = 'draw';
@@ -118,7 +119,7 @@ export class DrawCommand implements DiscordCommand {
         if (images.length === 0) {
             return null;
         }
-        const index = Math.floor(Math.random() * images.length);
+        const index = randomInRange(0, images.length);
         const imageName = images[index].name;
         return path.join(cardsDirectory, imageName);
     }
